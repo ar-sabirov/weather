@@ -80,7 +80,11 @@ class SqliteDB(BaseDataLayer):
         with sqlite3_connection(self.path) as conn:
             cursor = conn.cursor()
             cursor.execute(SqliteDB._select_statement, interval)
-            return cursor.fetchall()
+            result = [
+                WeatherRecord(city=x[1], weather=x[2], temp=x[3], ts=x[4])
+                for x in cursor.fetchall()
+            ]
+            return result
 
 
 sample = {
@@ -126,7 +130,7 @@ sample = {
 
 if __name__ == "__main__":
     db = SqliteDB('/home/arthur/test.db')
-    sample_record = WeatherRecord(sample)
+    sample_record = WeatherRecord.from_json(sample)
     db.put(sample_record)
     res = db.query((1481712300, 1481712700))
-    print(res)
+    print([x.pretty('C') for x in res])

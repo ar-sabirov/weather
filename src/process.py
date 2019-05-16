@@ -3,18 +3,25 @@ from datetime import datetime
 
 
 class WeatherRecord():
-    def __init__(self, json_data: dict):
-        self.json_data = json_data
-        self.city = self.json_data['name']
-        self.weather = self.json_data['weather'][0]['description']
-        self.temp = temp = self.json_data['main']['temp']
-        self.ts = self.json_data['dt']
+    def __init__(self, city: str, weather: str, temp: int, ts: int):
+        self.city = city
+        self.weather = weather
+        self.temp = temp
+        self.ts = ts
 
     def pretty(self, scale: str):
         dt = datetime.fromtimestamp(self.ts)
         date = dt.strftime("%a %d %b %Y %H:%M")
         target_temp = convert_kelvin(self.temp, scale)
         return f"{self.city}, {date}, {self.weather}, {target_temp}"
+
+    @classmethod
+    def from_json(cls, json_data) -> 'WeatherRecord':
+        city = json_data['name']
+        weather = json_data['weather'][0]['description']
+        temp = json_data['main']['temp']
+        ts = json_data['dt']
+        return WeatherRecord(city=city, weather=weather, temp=temp, ts=ts)
 
 
 def convert_kelvin(temp: float, target: str = 'C') -> str:
@@ -37,6 +44,8 @@ def convert_kelvin(temp: float, target: str = 'C') -> str:
     t_conv = conversion[target](temp)
     return str(round(t_conv)) + target
 
+
+WeatherRecord.pretty
 
 if __name__ == "__main__":
     print(convert_kelvin(362, 'C'))
