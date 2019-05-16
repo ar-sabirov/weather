@@ -2,14 +2,19 @@ import json
 from datetime import datetime
 
 
-def parse_weather(report: dict, temp_scale):
-    dt = datetime.fromtimestamp(report['dt'])
-    city = report['name']
-    weather = report['weather'][0]['description']
-    temp = report['main']['temp']
-    target_temp = convert_kelvin(temp, temp_scale)
-    date = dt.strftime("%a %d %b %Y %H:%M")
-    return f"{city}, {date}, {weather}, {target_temp}"
+class WeatherRecord():
+    def __init__(self, json_data: dict):
+        self.json_data = json_data
+        self.city = self.json_data['name']
+        self.weather = self.json_data['weather'][0]['description']
+        self.temp = temp = self.json_data['main']['temp']
+        self.ts = self.json_data['dt']
+
+    def pretty(self, scale: str):
+        dt = datetime.fromtimestamp(self.ts)
+        date = dt.strftime("%a %d %b %Y %H:%M")
+        target_temp = convert_kelvin(self.temp, scale)
+        return f"{self.city}, {date}, {self.weather}, {target_temp}"
 
 
 def convert_kelvin(temp: float, target: str = 'C') -> str:

@@ -3,7 +3,7 @@ import json
 import unittest
 from unittest.mock import Mock, patch
 from nose.tools import assert_is_not_none
-from src.process import parse_weather
+from src.process import WeatherRecord
 from src.client import fetch
 
 
@@ -27,9 +27,10 @@ class WeatherClientTest(unittest.TestCase):
 
         response = fetch('')
         self.assertEqual(response.json(), self.sample_response)
-        self.assertEqual(parse_weather(response.json(), 'C'),
-                          'London, Wed 14 Dec 2016 13:50, haze, 11C')
+        record = WeatherRecord(response.json())
+        self.assertEqual(record.pretty('C'),
+                         'London, Wed 14 Dec 2016 13:50, haze, 11C')
 
-    
+
 if __name__ == "__main__":
     unittest.main()
