@@ -40,7 +40,11 @@ def convert_kelvin(temp: float, target: str = 'C') -> str:
     str
         Converted temperature with scale suffix (C/F)
     """
-    conversion = {'C': lambda x: x - 273.15, 'F': lambda x: x * 9 / 5 - 459.67}
+    conversion = {
+        'K': lambda x: x,
+        'C': lambda x: x - 273.15,
+        'F': lambda x: x * 9 / 5 - 459.67
+    }
     t_conv = conversion[target](temp)
     return str(round(t_conv)) + target
 

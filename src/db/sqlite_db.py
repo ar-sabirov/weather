@@ -56,11 +56,18 @@ class SqliteDB(BaseDataLayer):
     VALUES(?,?,?,?)
     """
 
+    _select_range_statement = """
+    SELECT
+    *
+    FROM reports
+    WHERE (ts BETWEEN ? AND ?) AND (city = ?)
+    """
+
     _select_statement = """
     SELECT
     *
     FROM reports
-    WHERE ts BETWEEN ? AND ?
+    WHERE (city=?)
     """
 
     def __init__(self, path: str):
@@ -76,10 +83,22 @@ class SqliteDB(BaseDataLayer):
             cursor.execute(SqliteDB._insert_statement, values)
         print('Written in db')
 
-    def query(self, interval: Tuple[int, int]) -> List[WeatherRecord]:
+    def query(self, ts_from: int, ts_to: int,
+              city: str) -> List[WeatherRecord]:
         with sqlite3_connection(self.path) as conn:
             cursor = conn.cursor()
-            cursor.execute(SqliteDB._select_statement, interval)
+            cursor.execute(SqliteDB._select_range_statement,
+                           (ts_from, ts_to, city))
+            result = [
+                WeatherRecord(city=x[1], weather=x[2], temp=x[3], ts=x[4])
+                for x in cursor.fetchall()
+            ]
+            return result
+
+    def query_city(self, city: str) -> List[WeatherRecord]:
+        with sqlite3_connection(self.path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(SqliteDB._select_statement, (city, ))
             result = [
                 WeatherRecord(city=x[1], weather=x[2], temp=x[3], ts=x[4])
                 for x in cursor.fetchall()
@@ -132,5 +151,6 @@ if __name__ == "__main__":
     db = SqliteDB('/home/arthur/test.db')
     sample_record = WeatherRecord.from_json(sample)
     db.put(sample_record)
-    res = db.query((1481712300, 1481712700))
+    #res = db.query(1481712300, 1481712700, 'London')
+    res = db.query_city('London')
     print([x.pretty('C') for x in res])
