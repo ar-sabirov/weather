@@ -1,7 +1,7 @@
-import requests
+import asyncio
 import logging
 
-import asyncio
+import requests
 
 api_url_base = 'http://api.openweathermap.org/data/2.5/weather?q=London,uk&appid=332aff71953e43412a946ab10190bc7a'
 
@@ -51,6 +51,5 @@ async def run2():
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    #loop.run_until_complete(fetch_async(api_url_base))
     loop.run_until_complete(asyncio.wait([run(), run2()]))
     loop.close()

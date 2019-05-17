@@ -1,5 +1,10 @@
-import json
 from datetime import datetime
+
+CONVERSION = {
+    'K': lambda x: x,
+    'C': lambda x: x - 273.15,
+    'F': lambda x: x * 9 / 5 - 459.67
+}
 
 
 class WeatherRecord():
@@ -24,32 +29,24 @@ class WeatherRecord():
         return WeatherRecord(city=city, weather=weather, temp=temp, ts=ts)
 
 
-def convert_kelvin(temp: float, target: str = 'C') -> str:
+def convert_kelvin(temp: float, target: str) -> str:
     """Convert Kelvin temperature to other scale
-    
+
     Parameters
     ----------
     temp : float
         Kelvin temperature
     target : str, optional
-        Target scale name ("cl" - Celsius, "fh" - Fahrenheit),
-        by default 'cl'
-    
+        Target scale name ("C" - Celsius, "F" - Fahrenheit)
+
     Returns
     -------
     str
         Converted temperature with scale suffix (C/F)
     """
-    conversion = {
-        'K': lambda x: x,
-        'C': lambda x: x - 273.15,
-        'F': lambda x: x * 9 / 5 - 459.67
-    }
-    t_conv = conversion[target](temp)
+    t_conv = CONVERSION[target](temp)
     return str(round(t_conv)) + target
 
-
-WeatherRecord.pretty
 
 if __name__ == "__main__":
     print(convert_kelvin(362, 'C'))
