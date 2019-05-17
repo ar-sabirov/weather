@@ -9,6 +9,7 @@ from src.process import WeatherRecord
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
+#TODO универсальный класс для БД (фасад), который решает какую БД использовать
 class Sqlite3_connection():
     def __init__(self, path):
         self.path = path
