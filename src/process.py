@@ -8,20 +8,36 @@ CONVERSION = {
 
 
 class WeatherRecord():
+    """Class to deal with weather report data
+    """
+
     def __init__(self, city: str, weather: str, temp: int, ts: int):
         self.city = city
         self.weather = weather
         self.temp = temp
         self.ts = ts
 
-    def pretty(self, scale: str):
+    def pretty(self, scale: str) -> str:
+        """Converts weather record to target scale and formats it to
+        'London, Wed 14 Dec 2016 10:37, cloudy, 9C'
+        
+        Parameters
+        ----------
+        scale : str
+            Scale used to calculate and print temperature
+        
+        Returns
+        -------
+        str
+            Pretty formatted string
+        """
         dt = datetime.fromtimestamp(self.ts)
         date = dt.strftime("%a %d %b %Y %H:%M")
         target_temp = convert_kelvin(self.temp, scale)
         return f"{self.city}, {date}, {self.weather}, {target_temp}"
 
     @classmethod
-    def from_json(cls, json_data) -> 'WeatherRecord':
+    def from_json(cls, json_data: dict) -> 'WeatherRecord':
         city = json_data['name']
         weather = json_data['weather'][0]['description']
         temp = json_data['main']['temp']

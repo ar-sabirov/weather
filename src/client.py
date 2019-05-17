@@ -3,17 +3,14 @@ import logging
 
 import requests
 
+from src.db.sqlite_db import SqliteDB
+from src.process import WeatherRecord
+
+#TODO move to global config
 api_url_base = 'http://api.openweathermap.org/data/2.5/weather?q=London,uk&appid=332aff71953e43412a946ab10190bc7a'
+database = '/home/arthur/test.db'
 
 logger = logging.getLogger('asyncio')
-logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler('log.log')
-fh.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-logger.addHandler(fh)
-logger.addHandler(ch)
 
 
 def fetch(url: str):
@@ -32,8 +29,9 @@ async def fetch_retry(url: str, interval: int = 5):
         response = fetch(url)
         if response:
             pending = False
-            return response
-        logger.debug('Waiting')
+            wr = WeatherRecord.from_json(response.json())
+            SqliteDB(database).put(wr)
+        logger.debug('Waiting 200 response')
         await asyncio.sleep(interval)
 
 
@@ -50,6 +48,7 @@ async def run2():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(filename='client.log', level=logging.DEBUG)
     loop = asyncio.get_event_loop()
     loop.run_until_complete(asyncio.wait([run(), run2()]))
     loop.close()

@@ -1,9 +1,12 @@
+import logging
 import sqlite3
 from sqlite3 import Error
 from typing import List
 
 from src.db.base import BaseDataLayer
 from src.process import WeatherRecord
+
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 class Sqlite3_connection():
@@ -13,7 +16,7 @@ class Sqlite3_connection():
 
     def __enter__(self):
         self.conn = sqlite3.connect(self.path)
-        print('CONNECTED!')
+        logger.debug('Connected to sqlite db')
         return self.conn
 
     def __exit__(self, exc_class, exc, traceback):
@@ -35,13 +38,13 @@ def create_table(conn: sqlite3.Connection,
     try:
         cur = conn.cursor()
         cur.execute(create_table_statement)
-        print('CREATED TABLE')
+        logger.debug('Create table if not exist')
     except Error as e:
-        print(e)
+        logger.exception(e)
 
 
 class SqliteDB(BaseDataLayer):
-    _weather_table = """
+    _create_weather_table = """
     CREATE TABLE IF NOT EXISTS reports (
     id integer PRIMARY KEY,
     city text NOT NULL,
@@ -63,18 +66,19 @@ class SqliteDB(BaseDataLayer):
     WHERE (ts BETWEEN ? AND ?) AND (city = ?)
     """
 
+    #TODO Write ahead log or wtf with read-write simultaneously
     def __init__(self, path: str):
         self.path = path
         with Sqlite3_connection(path) as conn:
-            create_table(conn, SqliteDB._weather_table)
+            create_table(conn, SqliteDB._create_weather_table)
 
     def put(self, record: WeatherRecord) -> bool:
         values = record.city, record.weather, record.temp, record.ts
-        print(values)
+        logger.debug(values)
         with Sqlite3_connection(self.path) as conn:
             cursor = conn.cursor()
             cursor.execute(SqliteDB._insert_statement, values)
-        print('Written in db')
+        logger.debug('Written record db')
 
     def query(self, ts_from: int, ts_to: int,
               city: str) -> List[WeatherRecord]:
