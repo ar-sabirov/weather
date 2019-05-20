@@ -1,5 +1,6 @@
 """Client app to fetch weather reports
 """
+import argparse
 import asyncio
 import json
 import logging
@@ -8,13 +9,11 @@ import os
 import requests
 from requests.models import PreparedRequest
 
+from src.config import get_config
 from src.db.facade import Facade
 
-CONFIG = os.environ['WTHR_CONFIG']
-with open(CONFIG, mode='r') as fr:  # pylint: disable=invalid-name
-    CONFIG = json.load(fr)  # pylint: disable=invalid-name
-
 logger = logging.getLogger('asyncio')  # pylint: disable=invalid-name
+CONFIG = get_config()
 
 
 def fetch(url: str) -> requests.models.Response:
@@ -70,8 +69,16 @@ async def run(url: str):  # pylint: disable=missing-docstring
         await asyncio.sleep(5)
 
 
-if __name__ == "__main__":
-    # pylint: disable=invalid-name
+def main():
+    parser = argparse.ArgumentParser(description='APS dataset')
+
+    parser.add_argument('-q',
+                        '--query',
+                        help='City to query weather',
+                        type=str,
+                        default='London,uk')
+    parser.parse_args()
+    CONFIG['q'] = parser.query  # pylint: disable=no-member
     logging.basicConfig(filename='client.log', level=logging.DEBUG)
 
     req = PreparedRequest()
@@ -80,3 +87,7 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.run_until_complete(asyncio.wait([run(req.url)]))
     loop.close()
+
+
+if __name__ == "__main__":
+    main()

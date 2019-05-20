@@ -3,16 +3,15 @@
 import json
 import os
 
+from src.config import get_config
 from src.db.sql_db import SqlDB
 
-CONFIG = os.environ['WTHR_CONFIG']
-with open(CONFIG, mode='r') as fr:  # pylint: disable=invalid-name
-    DB_PATH = json.load(fr)['db_path']
+CONFIG = get_config()
 
 
 class Facade():
     def __init__(self):
-        self.sql_db = SqlDB(DB_PATH)
+        self.sql_db = SqlDB(CONFIG['db_path'])
 
     def insert(self, json_dict: dict):
         self.sql_db.insert(json_dict)

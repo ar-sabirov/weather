@@ -1,18 +1,15 @@
 """ORM for weather report data with sqlalchemy
 """
-import json
 import logging
-import os
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, Sequence, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
+from src.config import get_config
 from src.utils.conversions import convert_kelvin
 
-CONFIG = os.environ['WTHR_CONFIG']
-with open(CONFIG, mode='r') as fr:  # pylint: disable=invalid-name
-    DB_PATH = json.load(fr)['db_path']
+CONFIG = get_config()
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -80,5 +77,5 @@ class WeatherReport(Base):
                 f"""ts={self.timestamp})""")
 
 
-ENGINE = create_engine(DB_PATH, echo=True)
+ENGINE = create_engine(CONFIG['db_path'], echo=True)
 Base.metadata.create_all(ENGINE)

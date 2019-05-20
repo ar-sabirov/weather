@@ -1,8 +1,0 @@
-{
-    "db_path": "sqlite:////home/arthur/test.db",
-    "api_url_base": "http://api.openweathermap.org/data/2.5/weather",
-    "query_args": {
-        "q": "London,uk",
-        "appid": "332aff71953e43412a946ab10190bc7a"
-    }
-}
