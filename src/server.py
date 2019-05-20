@@ -59,7 +59,31 @@ def date_to_interval(date: datetime.date, zero_seconds: bool) -> int:
     return timestamp
 
 
-#TODO test inputs for 500 error
+##TODO test inputs for 500 error
+
+
+class InvalidUsage(Exception):
+    """Class for custom exception handling
+    """
+    status_code = 400
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+
+    def to_dict(self):  # pylint: disable=missing-docstring
+        error_dict = dict(self.payload or ())
+        error_dict['message'] = self.message
+        error_dict['status_code'] = self.status_code
+        return error_dict
+
+
+@app.errorhandler(InvalidUsage)
+def handle_invalid_usage(error):  # pylint: disable=missing-docstring
+    return jsonify(error.to_dict())
 
 
 @app.route('/weather/<city>', methods=['GET'])
@@ -71,13 +95,12 @@ def query_weather(city: str):
     try:
         date_start = parse_date(start)
         date_stop = parse_date(stop)
-    except ValueError as e:  # pylint: disable=invalid-name
-        #TODO return code 400 bad request + why
-        #TODO do not throw internal error for client
-        return str(e)
+    except ValueError:
+        raise InvalidUsage('Unable to parse date', status_code=400)
     if date_start > date_stop:
-        #TODO return code 400 bad request + why
-        return f'Start {date_start} is later than stop {date_stop}'
+        raise InvalidUsage(
+            f'Start {date_start} is later than stop {date_stop}',
+            status_code=400)
 
     ts_start = date_to_interval(date_start, zero_seconds=True)
     ts_stop = date_to_interval(date_stop, zero_seconds=False)
@@ -87,7 +110,7 @@ def query_weather(city: str):
     try:
         result = [x.pretty(unit) for x in q_res]
     except KeyError:
-        return f'Unknown unit {unit}'
+        raise InvalidUsage('Unknown temperature unit', status_code=400)
 
     return jsonify(result)
 

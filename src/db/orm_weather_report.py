@@ -8,7 +8,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, Sequence, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
-from utils.conversions import convert_kelvin
+from src.utils.conversions import convert_kelvin
 
 CONFIG = os.environ['WTHR_CONFIG']
 with open(CONFIG, mode='r') as fr:  # pylint: disable=invalid-name
@@ -68,7 +68,8 @@ class WeatherReport(Base):
         str
             Pretty formatted string
         """
-        dt = datetime.fromtimestamp(self.timestamp)  # pylint: disable=invalid-name
+        # pylint: disable=invalid-name
+        dt = datetime.fromtimestamp(self.timestamp)
         date = dt.strftime("%a %d %b %Y %H:%M")
         target_temp = convert_kelvin(self.temp, scale)
         return f"{self.city}, {date}, {self.weather}, {target_temp}"
