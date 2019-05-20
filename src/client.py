@@ -6,17 +6,13 @@ import logging
 import os
 
 import requests
+from requests.models import PreparedRequest
 
 from src.db.facade import Facade
 
-#TODO fetch other cities
-
-#TODO query builder
-
 CONFIG = os.environ['WTHR_CONFIG']
 with open(CONFIG, mode='r') as fr:  # pylint: disable=invalid-name
-    cfg = json.load(fr)  # pylint: disable=invalid-name
-    BASE_URL = cfg['api_url_base']
+    CONFIG = json.load(fr)  # pylint: disable=invalid-name
 
 logger = logging.getLogger('asyncio')  # pylint: disable=invalid-name
 
@@ -68,14 +64,19 @@ async def fetch_retry(url: str, interval: int = 5):
         await asyncio.sleep(interval)
 
 
-async def run():  # pylint: disable=missing-docstring
+async def run(url: str):  # pylint: disable=missing-docstring
     while True:
-        await fetch_retry(BASE_URL, interval=3)
+        await fetch_retry(url, interval=3)
         await asyncio.sleep(5)
 
 
 if __name__ == "__main__":
+    # pylint: disable=invalid-name
     logging.basicConfig(filename='client.log', level=logging.DEBUG)
-    loop = asyncio.get_event_loop()  # pylint: disable=invalid-name
-    loop.run_until_complete(asyncio.wait([run()]))
+
+    req = PreparedRequest()
+    req.prepare_url(CONFIG['api_url_base'], CONFIG['query_args'])
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(asyncio.wait([run(req.url)]))
     loop.close()
