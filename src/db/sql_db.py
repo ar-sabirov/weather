@@ -32,6 +32,6 @@ class SqlDB():
         session = self.Session()
 
         result = session.query(WeatherReport).filter(
-            WeatherReport.ts.between(ts_from,
-                                     ts_to)).filter(WeatherReport.city == city)
+            WeatherReport.timestamp.between(
+                ts_from, ts_to)).filter(WeatherReport.city == city)
         return result
