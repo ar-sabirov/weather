@@ -12,8 +12,7 @@ from utils.conversions import convert_kelvin
 
 CONFIG = os.environ['WTHR_CONFIG']
 with open(CONFIG, mode='r') as fr:  # pylint: disable=invalid-name
-    cfg = json.load(fr)
-    DB_PATH = cfg['db_path']
+    DB_PATH = json.load(fr)['db_path']
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 

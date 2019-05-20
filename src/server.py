@@ -59,7 +59,6 @@ def date_to_interval(date: datetime.date, zero_seconds: bool) -> int:
     return timestamp
 
 
-#TODO test sql injections
 #TODO test inputs for 500 error
 
 

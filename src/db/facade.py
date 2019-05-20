@@ -7,8 +7,7 @@ from src.db.sql_db import SqlDB
 
 CONFIG = os.environ['WTHR_CONFIG']
 with open(CONFIG, mode='r') as fr:  # pylint: disable=invalid-name
-    cfg = json.load(fr)
-    DB_PATH = cfg['db_path']
+    DB_PATH = json.load(fr)['db_path']
 
 
 class Facade():

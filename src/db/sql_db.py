@@ -1,4 +1,4 @@
-"""
+"""Class for sqlalchemy SQL databases
 """
 import logging
 from typing import List
@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 class SqlDB():
 
     #TODO Write ahead log or wtf with read-write simultaneously
-    #TODO add path
     def __init__(self, path: str):
         self.engine = create_engine(path, echo=True)
         self.Session = sessionmaker(bind=self.engine)  # pylint: disable=invalid-name
