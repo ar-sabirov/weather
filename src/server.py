@@ -1,32 +1,62 @@
-import time
+"""Flask server to expose API for collected
+weather data
+"""
 import datetime
 import logging
-from flask import Flask, request, jsonify, current_app, g
-from src.db.sqlite_db import SqliteDB
+import time
 
-app = Flask(__name__)
-#TODO move to global config
-app.config['DATABASE'] = '/home/arthur/test.db'
+from flask import Flask, g, jsonify, request
 
-logger = logging.getLogger('app_server')
+from src.db.facade import Facade
+
+app = Flask(__name__)  # pylint: disable=invalid-name
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 def get_db():
     if 'db' not in g:
-        g.db = SqliteDB(current_app.config['DATABASE'])
+        g.db = Facade()
     return g.db
 
 
-def toDate(dateString):
-    return datetime.datetime.strptime(dateString, "%d-%m-%Y").date()
+def parse_date(date_string: str) -> datetime.date:
+    """Parse date string ('%d-%m-%Y' -> '02-03-2020')
+    convert to datetime.date
+
+    Parameters
+    ----------
+    date_string : str
+        Date string '%d-%m-%Y' (e.g '02-03-2020')
+
+    Returns
+    -------
+    datetime.date
+        datetime.date object
+    """
+    return datetime.datetime.strptime(date_string, "%d-%m-%Y").date()
 
 
-def datesToInterval(date1: datetime.date, date2: datetime.date):
-    d1 = datetime.datetime.combine(date1, datetime.time.min)
-    d2 = datetime.datetime.combine(date2, datetime.time.max)
-    ts1 = int(time.mktime(d1.timetuple()))
-    ts2 = int(time.mktime(d2.timetuple()))
-    return ts1, ts2
+def date_to_interval(date: datetime.date, zero_seconds: bool) -> int:
+    """Convert datetime.date date to integer timestamp
+    either at 00:00:00 or 24:59:59 hours
+
+    Parameters
+    ----------
+    date : datetime.date
+        [description]
+    zero_seconds : bool
+        If true, returns timestamp at 00:00:00 of date,
+        else: 24:59:59
+
+    Returns
+    -------
+    int
+        Integer timestamp
+    """
+    combiner = datetime.time.min if zero_seconds else datetime.time.max
+    date_combined = datetime.datetime.combine(date, combiner)
+    timestamp = int(time.mktime(date_combined.timetuple()))
+    return timestamp
 
 
 #TODO test sql injections
@@ -34,16 +64,15 @@ def datesToInterval(date1: datetime.date, date2: datetime.date):
 
 
 @app.route('/weather/<city>', methods=['GET'])
-def query_weather(city):
-    #TODO sanitization <city> - no sql injections
-    db = get_db()
+def query_weather(city: str):
+    db = get_db()  # pylint: disable=invalid-name
     start = request.args.get('start', default='1-1-0001')
     stop = request.args.get('stop', default='31-12-9999')
 
     try:
-        date_start = toDate(start)
-        date_stop = toDate(stop)
-    except ValueError as e:
+        date_start = parse_date(start)
+        date_stop = parse_date(stop)
+    except ValueError as e:  # pylint: disable=invalid-name
         #TODO return code 400 bad request + why
         #TODO do not throw internal error for client
         return str(e)
@@ -51,7 +80,8 @@ def query_weather(city):
         #TODO return code 400 bad request + why
         return f'Start {date_start} is later than stop {date_stop}'
 
-    ts_start, ts_stop = datesToInterval(date_start, date_stop)
+    ts_start = date_to_interval(date_start, zero_seconds=True)
+    ts_stop = date_to_interval(date_stop, zero_seconds=False)
     q_res = db.query(ts_start, ts_stop, city)
     unit = request.args.get('unit', 'K')
 

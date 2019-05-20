@@ -1,21 +1,40 @@
+"""Client app to fetch weather reports
+"""
 import asyncio
+import json
 import logging
+import os
 
 import requests
 
-from src.db.sqlite_db import SqliteDB
-from src.process import WeatherRecord
+from src.db.facade import Facade
 
-#TODO move to global config
 #TODO fetch other cities
+
 #TODO query builder
-api_url_base = 'http://api.openweathermap.org/data/2.5/weather?q=London,uk&appid=332aff71953e43412a946ab10190bc7a'
-database = '/home/arthur/test.db'
 
-logger = logging.getLogger('asyncio')
+CONFIG = os.environ['WTHR_CONFIG']
+with open(CONFIG, mode='r') as fr:  # pylint: disable=invalid-name
+    cfg = json.load(fr)  # pylint: disable=invalid-name
+    BASE_URL = cfg['api_url_base']
+
+logger = logging.getLogger('asyncio')  # pylint: disable=invalid-name
 
 
-def fetch(url: str):
+def fetch(url: str) -> requests.models.Response:
+    """Synchronous data fetch using requests module.
+    (for mock tests)
+
+    Parameters
+    ----------
+    url : str
+        Resource url
+
+    Returns
+    -------
+    requests.models.Response
+        Resulting response (can be None)
+    """
     response = requests.get(url)
     if response.ok:
         logger.debug("Fetched %s", response.json())
@@ -26,31 +45,37 @@ def fetch(url: str):
 
 
 async def fetch_retry(url: str, interval: int = 5):
+    """Asynchronous data fetch. If response is None,
+    retries after <interval> seconds until successful
+    fetch
+
+    Parameters
+    ----------
+    url : str
+        Resourse url
+    interval : int, optional
+        Retry after, by default 5
+    """
     pending = True
     while pending:
         response = fetch(url)
         if response:
             pending = False
-            wr = WeatherRecord.from_json(response.json())
-            SqliteDB(database).put(wr)
+            json_dict = response.json()
+            Facade().insert(json_dict)
             return
         logger.debug('Waiting 200 response')
         await asyncio.sleep(interval)
 
 
-async def run():
+async def run():  # pylint: disable=missing-docstring
     while True:
-        await fetch_retry(api_url_base, interval=3)
+        await fetch_retry(BASE_URL, interval=3)
         await asyncio.sleep(5)
 
 
-# async def run2():
-#     while True:
-#         logger.debug('Running along')
-#         await asyncio.sleep(1)
-
 if __name__ == "__main__":
     logging.basicConfig(filename='client.log', level=logging.DEBUG)
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_event_loop()  # pylint: disable=invalid-name
     loop.run_until_complete(asyncio.wait([run()]))
     loop.close()
