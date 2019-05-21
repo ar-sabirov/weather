@@ -9,9 +9,11 @@ from src.config import get_config
 from src.db.facade import Facade
 from src.utils.utils import CONVERSION, parse_date, date_to_timestamp
 
+CONFIG = get_config()
+
 app = Flask(__name__)  # pylint: disable=invalid-name
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
-CONFIG = get_config()
+logging.basicConfig(filename=CONFIG['server_log'], level=logging.DEBUG)
 
 
 def get_db():
@@ -73,5 +75,4 @@ def query_weather(city: str):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename=CONFIG['server_log'], level=logging.DEBUG)
     app.run(host=CONFIG['host'], port=CONFIG['port'], debug=True)

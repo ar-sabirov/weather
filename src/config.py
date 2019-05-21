@@ -30,7 +30,7 @@ def get_config() -> dict:
     }
 
     test_config = {
-        "db_path": "sqlite:////home/arthur/test.db",
+        "db_path": "sqlite:///test.db",
         "api_url_base": "http://api.openweathermap.org/data/2.5/weather",
         "query_args": {
             "appid": "332aff71953e43412a946ab10190bc7a",
