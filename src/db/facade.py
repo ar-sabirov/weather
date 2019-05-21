@@ -1,7 +1,5 @@
 """Facade class to deal with arbitrary database(s)
 """
-import json
-import os
 
 from src.config import get_config
 from src.db.sql_db import SqlDB

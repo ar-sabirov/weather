@@ -15,7 +15,7 @@ def get_config() -> dict:
     """
 
     default_config = {
-        "db_path": "sqlite:////home/arthur/prod.db",
+        "db_path": "sqlite:///prod.db",
         "api_url_base": "http://api.openweathermap.org/data/2.5/weather",
         "query_args": {
             "appid": "332aff71953e43412a946ab10190bc7a",
@@ -29,8 +29,24 @@ def get_config() -> dict:
         "client_log": "client.log"
     }
 
-    if os.environ.get('WTHR_CONFIG'):
-        with open(os.environ['WTHR_CONFIG'], mode='r') as fr:
+    test_config = {
+        "db_path": "sqlite:////home/arthur/test.db",
+        "api_url_base": "http://api.openweathermap.org/data/2.5/weather",
+        "query_args": {
+            "appid": "332aff71953e43412a946ab10190bc7a",
+            "q": "London,uk"
+        },
+        "fetch_interval_s": 5,
+        "retry_interval_s": 3,
+        "host": "localhost",
+        "port": "5055",
+        "server_log": "test_server.log",
+        "client_log": "test_client.log"
+    }
+    if os.environ.get('TEST'):
+        return test_config
+    if os.environ.get('CONFIG_PATH'):
+        with open(os.environ['CONFIG_PATH'], mode='r') as fr:  # pylint: disable=invalid-name
             return json.load(fr)
     else:
         return default_config

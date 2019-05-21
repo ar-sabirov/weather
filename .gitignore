@@ -2,3 +2,4 @@ __pycache__
 .vscode
 .noseids
 *.log
+*.db

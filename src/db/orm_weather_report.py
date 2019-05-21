@@ -7,7 +7,7 @@ from sqlalchemy import Column, Integer, Sequence, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
 from src.config import get_config
-from src.utils.conversions import convert_kelvin
+from src.utils.utils import convert_kelvin
 
 CONFIG = get_config()
 

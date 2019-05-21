@@ -1,32 +1,24 @@
+import json
 import os
 import unittest
-import json
 from unittest.mock import patch
 
-from src.db.orm_weather_report import WeatherReport
+os.environ['TEST'] = "1"
+
+# pylint: disable=wrong-import-position
 from src.client import fetch
+from src.db.orm_weather_report import WeatherReport
 
 
-class WeatherClientTest(unittest.TestCase):
-    default_config = {
-        "db_path": "sqlite:////home/arthur/test.db",
-        "api_url_base": "http://api.openweathermap.org/data/2.5/weather",
-        "query_args": {
-            "appid": "332aff71953e43412a946ab10190bc7a",
-            "q": "London,uk"
-        }
-    }
-
+class ClientTest(unittest.TestCase):
     def setUp(self):
         this_filepath = os.path.dirname(__file__)
         weather_file = os.path.join(this_filepath, 'weather.txt')
-        with open(weather_file, 'r') as fr:
+        with open(weather_file, 'r') as fr:  # pylint: disable=invalid-name
             self.sample_response = json.load(fr)
 
-    @patch('src.config.get_config')
     @patch('src.client.requests.get')
-    def test_fetch_mock(self, mock_requests_get, mock_get_config):
-        mock_get_config.return_value = WeatherClientTest.default_config
+    def test_fetch_mock(self, mock_requests_get):
         mock_requests_get.return_value.ok = True
         mock_requests_get.return_value.json.return_value = self.sample_response
 
