@@ -23,7 +23,6 @@ class WeatherClientTest(unittest.TestCase):
         with open(weather_file, 'r') as fr:
             self.sample_response = json.load(fr)
 
-    # TODO Mock get config for test db
     @patch('src.config.get_config')
     @patch('src.client.requests.get')
     def test_fetch_mock(self, mock_requests_get, mock_get_config):

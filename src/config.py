@@ -22,7 +22,11 @@ def get_config() -> dict:
             "q": "London,uk"
         },
         "fetch_interval_s": 5,
-        "retry_interval_s": 3
+        "retry_interval_s": 3,
+        "host": "localhost",
+        "port": "5050",
+        "server_log": "server.log",
+        "client_log": "client.log"
     }
 
     if os.environ.get('WTHR_CONFIG'):

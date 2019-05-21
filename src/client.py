@@ -80,7 +80,7 @@ def main():
     args = parser.parse_args()
     if args.query:
         CONFIG['query_args']['q'] = args.query
-    logging.basicConfig(filename='client.log', level=logging.DEBUG)
+    logging.basicConfig(filename=CONFIG['client_log'], level=logging.DEBUG)
 
     req = PreparedRequest()
     req.prepare_url(CONFIG['api_url_base'], CONFIG['query_args'])

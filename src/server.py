@@ -7,11 +7,13 @@ import time
 
 from flask import Flask, g, jsonify, request
 
+from src.config import get_config
 from src.db.facade import Facade
 from src.utils.conversions import CONVERSION
 
 app = Flask(__name__)  # pylint: disable=invalid-name
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
+CONFIG = get_config()
 
 
 def get_db():
@@ -116,5 +118,5 @@ def query_weather(city: str):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='server.log', level=logging.DEBUG)
-    app.run(host='localhost', port='5050', debug=True)
+    logging.basicConfig(filename=CONFIG['server_log'], level=logging.DEBUG)
+    app.run(host=CONFIG['host'], port=CONFIG['port'], debug=True)
