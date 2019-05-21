@@ -74,16 +74,15 @@ class InvalidUsage(Exception):
             self.status_code = status_code
         self.payload = payload
 
-    def to_dict(self):  # pylint: disable=missing-docstring
+    def to_dict(self):
         error_dict = dict(self.payload or ())
         error_dict['message'] = self.message
-        error_dict['status_code'] = self.status_code
         return error_dict
 
 
 @app.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):  # pylint: disable=missing-docstring
-    return jsonify(error.to_dict())
+    return jsonify(error.to_dict()), error.status_code
 
 
 @app.route('/weather/<city>', methods=['GET'])
