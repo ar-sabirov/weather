@@ -35,7 +35,7 @@ def fetch(url: str) -> requests.models.Response:
         logger.debug("Fetched %s", response.json())
         return response
     else:
-        logger.debug('Fetch failed')
+        logger.exception(f'Fetch failed with {response.json()}')
         return None
 
 
@@ -59,7 +59,7 @@ async def fetch_retry(url: str, interval: int = 5):
             json_dict = response.json()
             Facade().insert(json_dict)
             return
-        logger.debug('Waiting 200 response')
+        logger.debug('Fetch, waiting 200 response')
         await asyncio.sleep(interval)
 
 
@@ -77,13 +77,14 @@ def main():
                         help='City to query weather',
                         type=str,
                         default='London,uk')
-    parser.parse_args()
-    CONFIG['q'] = parser.query  # pylint: disable=no-member
+    args = parser.parse_args()
+    if args.query:
+        CONFIG['query_args']['q'] = args.query
     logging.basicConfig(filename='client.log', level=logging.DEBUG)
 
     req = PreparedRequest()
     req.prepare_url(CONFIG['api_url_base'], CONFIG['query_args'])
-
+    logger.info(f'Request URL: {req.url}')
     loop = asyncio.get_event_loop()
     loop.run_until_complete(asyncio.wait([run(req.url)]))
     loop.close()

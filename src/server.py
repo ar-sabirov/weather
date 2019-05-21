@@ -8,6 +8,7 @@ import time
 from flask import Flask, g, jsonify, request
 
 from src.db.facade import Facade
+from src.utils.conversions import CONVERSION
 
 app = Flask(__name__)  # pylint: disable=invalid-name
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -38,7 +39,7 @@ def parse_date(date_string: str) -> datetime.date:
 
 def date_to_interval(date: datetime.date, zero_seconds: bool) -> int:
     """Convert datetime.date date to integer timestamp
-    either at 00:00:00 or 24:59:59 hours
+    either at 00:00:00 or 23:59:59 hours
 
     Parameters
     ----------
@@ -46,7 +47,7 @@ def date_to_interval(date: datetime.date, zero_seconds: bool) -> int:
         [description]
     zero_seconds : bool
         If true, returns timestamp at 00:00:00 of date,
-        else: 24:59:59
+        else: 23:59:59
 
     Returns
     -------
@@ -90,6 +91,10 @@ def query_weather(city: str):
     db = get_db()  # pylint: disable=invalid-name
     start = request.args.get('start', default='1-1-0001')
     stop = request.args.get('stop', default='31-12-9999')
+    unit = request.args.get('unit', 'K')
+
+    if unit not in CONVERSION.keys():
+        raise InvalidUsage('Unknown temperature unit', status_code=400)
 
     try:
         date_start = parse_date(start)
@@ -104,12 +109,8 @@ def query_weather(city: str):
     ts_start = date_to_interval(date_start, zero_seconds=True)
     ts_stop = date_to_interval(date_stop, zero_seconds=False)
     q_res = db.query(ts_start, ts_stop, city)
-    unit = request.args.get('unit', 'K')
 
-    try:
-        result = [x.pretty(unit) for x in q_res]
-    except KeyError:
-        raise InvalidUsage('Unknown temperature unit', status_code=400)
+    result = [x.pretty(unit) for x in q_res]
 
     return jsonify(result)
 
