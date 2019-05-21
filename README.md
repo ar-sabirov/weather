@@ -1,5 +1,5 @@
 # weather
-usage
+**usage**    
 pip install -r requirements.txt
 
 **client app / data collection:** python src/client.py (optional -q/--query "Moscow"/"Helsinki"/...)    
