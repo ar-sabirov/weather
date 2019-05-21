@@ -2,9 +2,7 @@
 """
 import argparse
 import asyncio
-import json
 import logging
-import os
 
 import requests
 from requests.models import PreparedRequest
@@ -39,7 +37,7 @@ def fetch(url: str) -> requests.models.Response:
         return None
 
 
-async def fetch_retry(url: str, interval: int = 5):
+async def fetch_retry(url: str, interval=5):
     """Asynchronous data fetch. If response is None,
     retries after <interval> seconds until successful
     fetch
@@ -63,10 +61,12 @@ async def fetch_retry(url: str, interval: int = 5):
         await asyncio.sleep(interval)
 
 
-async def run(url: str):  # pylint: disable=missing-docstring
+async def run(url: str, fetch_interval, retry_interval):  # pylint: disable=missing-docstring
+    """Fetch every CONFIG['fetch_interval_s'] seconds
+    """
     while True:
-        await fetch_retry(url, interval=3)
-        await asyncio.sleep(5)
+        await fetch_retry(url, retry_interval)
+        await asyncio.sleep(fetch_interval)
 
 
 def main():
@@ -86,7 +86,11 @@ def main():
     req.prepare_url(CONFIG['api_url_base'], CONFIG['query_args'])
     logger.info(f'Request URL: {req.url}')
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(asyncio.wait([run(req.url)]))
+    loop.run_until_complete(
+        asyncio.wait([
+            run(req.url, CONFIG['fetch_interval_s'],
+                CONFIG['retry_interval_s'])
+        ]))
     loop.close()
 
 

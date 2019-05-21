@@ -20,7 +20,9 @@ def get_config() -> dict:
         "query_args": {
             "appid": "332aff71953e43412a946ab10190bc7a",
             "q": "London,uk"
-        }
+        },
+        "fetch_interval_s": 5,
+        "retry_interval_s": 3
     }
 
     if os.environ.get('WTHR_CONFIG'):
