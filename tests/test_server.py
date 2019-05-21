@@ -1,8 +1,10 @@
 import json
 import os
 import unittest
-
 os.environ['TEST'] = "1"
+
+from sqlalchemy.engine.url import make_url
+
 # pylint: disable=wrong-import-position
 from src.config import get_config
 from src.db.facade import Facade
@@ -48,7 +50,8 @@ class ServerTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        os.remove(CONFIG['db_path'].split('///')[1])
+        db_url = make_url(CONFIG['db_path'])
+        os.remove(db_url.database)
 
 
 if __name__ == "__main__":
